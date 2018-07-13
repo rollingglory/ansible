@@ -1,0 +1,47 @@
+---
+- hosts: all
+  vars:
+    php_version: '7.2'
+  roles:
+    - role: geerlingguy.nginx
+      become: yes
+    - role: geerlingguy.php_versions
+      become: yes
+    - role: geerlingguy.php
+      become: yes
+    - role: geerlingguy.composer
+      become: yes
+      vars:
+        composer_global_packages:
+          - name: fxp/composer-asset-plugin
+    - role: geerlingguy.mysql
+      become: yes
+      vars:
+        mysql_user_home: '~'
+        mysql_user_name: '{{ ansible_user_id }}'
+        mysql_user_password: ''
+        mysql_databases:
+          - name: db
+        mysql_packages:
+          - mariadb-client
+          - mariadb-server
+          - python-mysqldb
+  tasks:
+    - name: 'clone project'
+      git:
+        repo: git@bitbucket.org:rollingglory/{{ project }}
+        dest: ~/app
+        accept_hostkey: yes
+    - name: 'install composer dependencies'
+      command: composer install
+      args:
+        chdir: ~/app
+    - name: 'initialize database'
+      mysql_db:
+        state: import
+        name: db
+        target: ~/app/db/schema.sql
+    - name: 'init yii'
+      command: php init --env=Development --overwrite=n
+      args:
+        chdir: ~/app

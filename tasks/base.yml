@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tasks:
+    - name: 'copy private key'
+      copy:
+        src: '~/.ssh/rgb/rollingglory'
+        dest: '~/.ssh/id_ed25519'
+        mode: 0600
+    - name: 'clone dotfiles'
+      git:
+        repo: 'https://gitlab.com/bentinata/dotfiles'
+        dest: '~/dotfiles'
+    - name: 'apply dotfiles'
+      shell: '~/dotfiles/source'
