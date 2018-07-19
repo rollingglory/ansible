@@ -47,7 +47,7 @@
     - name: 'enable webhook service'
       service:
         name: webhook
-        state: started
+        state: restarted
         enabled: yes
       become: true
 
