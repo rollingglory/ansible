@@ -1,0 +1,53 @@
+---
+- hosts: all
+  vars:
+    repo: adnanh/webhook
+    path: webhook-linux-amd64
+  tasks:
+# bootstrap webhook installation since it's not available on xenial
+# when upgrading to bionic, remove this with apt
+    - name: 'get latest release version'
+      uri:
+        url: https://api.github.com/repos/adnanh/webhook/releases/latest
+        return_content: yes
+      register: release
+    - name: 'download webhook'
+      unarchive:
+        remote_src: yes
+        src: https://github.com/adnanh/webhook/releases/download/{{ release.json.tag_name }}/{{ path }}.tar.gz
+        dest: .
+    - name: 'move webhook binary'
+      copy:
+        remote_src: yes
+        src: '{{ path }}/webhook'
+        dest: /usr/bin
+        mode: preserve
+      become: yes
+    - name: 'clean download artifact'
+      file:
+        path: '{{ path }}'
+        state: absent
+    - name: 'install systemd service'
+      copy:
+        src: ../assets/webhook.service
+        dest: /etc/systemd/system
+      become: true
+
+    - name: 'configure hooks'
+      copy:
+        src: ../assets/webhook.conf
+        dest: /etc
+      become: true
+    - name: 'copy scripts'
+      copy:
+        src: ../assets/webhook
+        dest: .
+        mode: preserve
+
+    - name: 'enable webhook service'
+      service:
+        name: webhook
+        state: started
+        enabled: yes
+      become: true
+
