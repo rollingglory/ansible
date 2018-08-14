@@ -10,8 +10,9 @@ L=$(git rev-parse @)
 R=$(git rev-parse @{u})
 
 if [ $L != $R ]; then
-  git status -uno
-  git pull --force > $log
+  git status -uno > $log
+  git reset --hard HEAD >> $log
+  git pull --force >> $log
   composer install >> $log
   mysql db < db/schema.sql
   mysql db < db/data.sql
