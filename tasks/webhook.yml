@@ -4,6 +4,11 @@
     repo: adnanh/webhook
     path: webhook-linux-amd64
   tasks:
+    - name: 'install jq'
+      package:
+        name: 'jq'
+        state: 'present'
+      become: yes
 # bootstrap webhook installation since it's not available on xenial
 # when upgrading to bionic, remove this with apt
     - name: 'get latest release version'
