@@ -13,7 +13,7 @@ R=$(git rev-parse @{u})
 
 if [ $L != $R ]; then
   $dir/clean.sh
-  git status -uno >> $log
+  git status -uno > $log
   git reset --hard HEAD >> $log
   git pull --force >> $log
   composer install >> $log
