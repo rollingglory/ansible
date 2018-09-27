@@ -35,6 +35,15 @@
           - mariadb-server
           - python-mysqldb
   tasks:
+    - name: 'install package dependencies'
+      package:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - jpegoptim
+        - optipng
+        - pngquant
+      become: yes
     - name: 'clone project'
       git:
         repo: git@bitbucket.org:rollingglory/{{ project }}
