@@ -1,0 +1,7 @@
+/roles/geerlingguy.composer
+/roles/geerlingguy.mysql
+/roles/geerlingguy.nginx
+/roles/geerlingguy.php
+/roles/geerlingguy.php-mysql
+/roles/geerlingguy.php-versions
+/roles/nginxinc.nginx
