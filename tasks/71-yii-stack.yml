@@ -1,0 +1,26 @@
+---
+- hosts: all
+  vars:
+    nginx_vhosts:
+      - template: '{{ playbook_dir }}/../assets/nginx/vhost.j2'
+        project: '{{ project }}'
+        server_name: '{{ project }}.dev.rollingglory.com'
+  roles:
+    - role: geerlingguy.nginx
+      become: yes
+  tasks:
+    - name: 'clone project'
+      git:
+        repo: https://***REMOVED***@bitbucket.org/rollingglory/{{ repo }}
+        dest: ~/{{ project }}
+        accept_hostkey: yes
+
+    - name: 'install composer dependencies'
+      command: composer install
+      args:
+        chdir: ~/{{ project }}
+
+    - name: 'init yii'
+      command: php init --env=Development --overwrite=n
+      args:
+        chdir: ~/{{ project }}

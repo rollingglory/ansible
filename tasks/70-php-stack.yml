@@ -2,9 +2,11 @@
 - hosts: all
   vars:
     php_packages_extra:
-      - php-intl
-      - php-mysql
-      - php-zip
+      - php{{ php_version }}-intl
+      - php{{ php_version }}-mysql
+      - php{{ php_version }}-zip
+      - php-memcached
+      - php-imagick
     php_webserver_daemon: "nginx"
     php_install_recommends: no
     php_enable_php_fpm: yes
@@ -13,14 +15,10 @@
     php_fpm_pool_user: "coaster"
     php_fpm_pool_group: "coaster"
     php_date_timezone: "Asia/Jakarta"
+    php_expose_php: "Off"
+    php_enable_apc: true
 
-    nginx_vhosts:
-      - template: '{{ playbook_dir }}/../assets/nginx/vhost.j2'
-        project: '{{ project }}'
-        server_name: '{{ project }}.dev.rollingglory.com'
   roles:
-    - role: geerlingguy.nginx
-      become: yes
     - role: geerlingguy.php-versions
       become: yes
     - role: geerlingguy.php
@@ -52,20 +50,5 @@
         - jpegoptim
         - optipng
         - pngquant
+        - unzip
       become: yes
-
-    - name: 'clone project'
-      git:
-        repo: https://***REMOVED***@bitbucket.org/rollingglory/{{ repo }}
-        dest: ~/{{ project }}
-        accept_hostkey: yes
-
-    - name: 'install composer dependencies'
-      command: composer install
-      args:
-        chdir: ~/{{ project }}
-
-    - name: 'init yii'
-      command: php init --env=Development --overwrite=n
-      args:
-        chdir: ~/{{ project }}
