@@ -1,0 +1,49 @@
+---
+- hosts: all
+  tasks:
+    - name: 'check uid 1000 exist'
+      command: getent passwd 1000
+      register: result
+
+    - name: 'create bentinata user'
+      when: result.rc == 2
+      user:
+        name: bentinata
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        uid: 1000
+      become: yes
+
+    - name: 'rename uid 1000 to bentinata'
+      when: result.rc == 0 and result.stdout.split(':')[0] != "bentinata"
+      command: usermod -l bentinata -md /home/bentinata {{ result.stdout.split(':')[0] }}
+      become: yes
+
+    - name: 'rename group to bentinata'
+      when: result.rc == 0 and result.stdout.split(':')[0] != "bentinata"
+      command: groupmod -n bentinata ubuntu
+      become: yes
+
+    - name: 'remove cloud-init-users'
+      file:
+        path: /etc/sudoers.d/90-cloud-init-users
+        state: absent
+      become: yes
+
+    - name: set bentinata authorized key
+      authorized_key:
+        user: bentinata
+        state: present
+        key: "{{ lookup('file', '~/.ssh/rgb/bentinata.pub') }}"
+      become: yes
+
+    - name: 'clone dotfiles'
+      git:
+        repo: 'https://gitlab.com/bentinata/dotfiles'
+        dest: '~/dotfiles'
+      register: dotfiles
+
+    - name: 'apply dotfiles'
+      when: dotfiles.after != dotfiles.before
+      shell: '~/dotfiles/source'

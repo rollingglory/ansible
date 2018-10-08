@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: set coaster authorized key
+      authorized_key:
+        user: coaster
+        state: present
+        key: '{{ item }}'
+      with_file:
+        - ~/.ssh/rgb/{{ user }}.pub
+      become: yes

@@ -1,0 +1,68 @@
+---
+- hosts: all
+  tasks:
+    - name: 'create coaster user'
+      user:
+        name: coaster
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        uid: 1001
+      become: yes
+    - name: set coaster authorized key
+      authorized_key:
+        user: coaster
+        state: present
+        key: '{{ item }}'
+      with_file:
+        - ~/.ssh/rgb/bentinata.pub
+        - ~/.ssh/rgb/adityakusnadi.pub
+        - ~/.ssh/rgb/rollingglory.pub
+      become: yes
+    - name: passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo\s'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+      become: yes
+
+    # - name: pam check if target is coaster
+    #   pamd:
+    #     name: su
+    #     type: auth
+    #     control: sufficient
+    #     module_path: pam_rootok.so
+    #     new_type: auth
+    #     new_control: '[success=ignore default=1]'
+    #     new_module_path: pam_succeed_if.so
+    #     module_arguments: 
+    #       - user=coaster
+    #     state: after
+    #   become: yes
+    # - name: pam allow if group in sudo
+    #   pamd:
+    #     name: su
+    #     type: auth
+    #     control: '[success=ignore default=1]'
+    #     module_path: pam_succeed_if.so
+    #     new_type: auth
+    #     new_control: sufficient
+    #     new_module_path: pam_succeed_if.so
+    #     module_arguments:
+    #       - use_uid
+    #       - user
+    #       - ingroup
+    #       - sudo
+    #     state: after
+    #   become: yes
+
+    - name: 'clone dotfiles'
+      git:
+        repo: 'https://gitlab.com/bentinata/dotfiles'
+        dest: '~/dotfiles'
+      register: dotfiles
+
+    - name: 'apply dotfiles'
+      when: dotfiles.after != dotfiles.before
+      shell: '~/dotfiles/source'
