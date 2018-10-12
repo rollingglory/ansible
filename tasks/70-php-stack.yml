@@ -29,18 +29,6 @@
       vars:
         composer_global_packages:
           - name: fxp/composer-asset-plugin
-    - role: geerlingguy.mysql
-      become: yes
-      vars:
-        mysql_user_home: '~'
-        mysql_user_name: '{{ ansible_user_id }}'
-        mysql_user_password: ''
-        mysql_databases:
-          - name: '{{ project }}'
-        mysql_packages:
-          - mariadb-client
-          - mariadb-server
-          - python-mysqldb
   tasks:
     - name: 'install package dependencies'
       package:
@@ -51,4 +39,5 @@
         - optipng
         - pngquant
         - unzip
+        - jq
       become: yes

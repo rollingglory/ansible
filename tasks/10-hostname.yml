@@ -3,5 +3,5 @@
   tasks:
     - name: 'set hostname'
       hostname:
-        name: '{{ inventory_hostname }}'
+        name: '{{ inventory_hostname.split("@")[-1] }}'
       become: yes

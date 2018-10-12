@@ -1,3 +1,5 @@
+secret.yml
+
 /roles/geerlingguy.composer
 /roles/geerlingguy.mysql
 /roles/geerlingguy.nginx
