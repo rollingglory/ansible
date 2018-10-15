@@ -7,3 +7,4 @@ secret.yml
 /roles/geerlingguy.php-mysql
 /roles/geerlingguy.php-versions
 /roles/nginxinc.nginx
+__pycache__

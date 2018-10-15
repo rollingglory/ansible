@@ -1,0 +1,63 @@
+---
+- hosts: all
+  vars:
+    dir: fathom
+    fathom:
+      server_addr: 8100
+      database:
+        driver: sqlite3
+        name: fathom.db
+    nginx_vhosts:
+      - template: '{{ playbook_dir }}/../assets/nginx/fathom.j2'
+        project: '{{ dir }}'
+        server_name: 'stat.rollingglory.com'
+        port: '{{ fathom.server_addr }}'
+  roles:
+    - role: geerlingguy.nginx
+      become: yes
+  tasks:
+# bootstrap installation since it's not available by repositories
+    - name: 'get latest release version'
+      uri:
+        url: https://api.github.com/repos/usefathom/fathom/releases/latest
+        return_content: yes
+      register: release
+    - name: 'download binary'
+      get_url:
+        url: https://github.com/usefathom/fathom/releases/download/{{ release.json.tag_name }}/fathom-linux-amd64-{{ release.json.tag_name }}
+        dest: /usr/local/bin/fathom
+      become: yes
+
+    - name: 'create config file'
+      lineinfile:
+        path: ~/{{ dir }}/.env
+        state: present
+        create: yes
+        regexp: '^{{ item.key }}'
+        line: '{{ item.key }}={{ item.value }}'
+      with_items: '{{ fathom | env("fathom_", True) | dict2items }}'
+    - name: 'test for config file secret'
+      command: grep '^FATHOM_SECRET' ~/{{ dir }}/.env
+      register: secret
+      ignore_errors: yes
+    - name: 'create config file secret'
+      lineinfile:
+        path: ~/{{ dir }}/.env
+        state: present
+        line: 'FATHOM_SECRET={{ lookup("password", "/dev/null length=16 chars=ascii_letters,digits") }}'
+      when: not secret.stdout
+
+
+    - name: 'install systemd service'
+      copy:
+        src: ../assets/fathom/fathom.service
+        dest: /etc/systemd/system
+      become: true
+    - name: 'enable service'
+      service:
+        name: fathom
+        state: restarted
+        enabled: yes
+      become: true
+      notify: reload nginx
+
