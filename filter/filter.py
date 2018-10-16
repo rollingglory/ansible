@@ -11,8 +11,6 @@ def env(s, lkey = '', uppercase = False):
             ret[key] = val
     return ret
 
-print(env({'fathom': {'server_addr': 9000, 'database': {'driver': 'sqlite3', 'name': 'fathom.db'}, 'secret': 'random-secret-string'}}))
-
 class FilterModule(object):
     def filters(self):
         return {
