@@ -5,7 +5,7 @@
   vars:
     query: "[?name == '{{ project }}.dev' ]|[0]"
     nginx_vhosts:
-      - template: '{{ playbook_dir }}/../assets/nginx/vhost.j2'
+      - template: '{{ playbook_dir }}/../assets/nginx/yii-advanced.j2'
         project: '{{ project }}'
         server_name: '{{ project }}.dev.rollingglory.com'
   roles:
