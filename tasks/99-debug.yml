@@ -1,0 +1,15 @@
+---
+- hosts: all
+  vars:
+    template: yii-advanced
+    item:
+      template: '{{ playbook_dir }}/../assets/nginx/{{ template }}.j2'
+      project: '{{ project }}'
+      server_name: '{{ server_name | default(project + ".dev.rollingglory.com") }}'
+      alias: '{{ alias.split(",") | join(" ") }}'
+  tasks:
+    - debug:
+        var: item
+    # - template:
+    #     src: ../assets/nginx/yii-advanced.j2
+    #     dest: yii-advanced.nginx

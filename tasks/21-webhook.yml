@@ -1,0 +1,30 @@
+---
+- hosts: all
+  vars:
+    repo: adnanh/webhook
+    path: webhook-linux-amd64
+  tasks:
+    - name: 'install webhook'
+      package:
+        name: 'webhook'
+        state: 'present'
+      become: yes
+
+    - name: 'configure hooks'
+      copy:
+        src: ../assets/webhook/webhook.conf
+        dest: /etc
+      become: true
+    - name: 'copy scripts'
+      copy:
+        src: ../assets/webhook
+        dest: .
+        mode: preserve
+
+    - name: 'enable webhook service'
+      service:
+        name: webhook
+        state: restarted
+        enabled: yes
+      become: true
+

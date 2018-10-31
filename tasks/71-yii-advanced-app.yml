@@ -3,11 +3,13 @@
   vars_files:
     - ../secret.yml
   vars:
+    alias: ""
     query: "[?name == '{{ project }}.dev' ]|[0]"
     nginx_vhosts:
       - template: '{{ playbook_dir }}/../assets/nginx/yii-advanced.j2'
         project: '{{ project }}'
-        server_name: '{{ project }}.dev.rollingglory.com'
+        server_name: '{{ server_name | default(project + ".dev.rollingglory.com") }}'
+        alias: '{{ alias.split(",") | join(" ") }}'
   roles:
     - role: geerlingguy.nginx
       become: yes
@@ -46,8 +48,17 @@
         src: ../../backend/web
         state: link
 
+    - name: 'check vendor patch exist'
+      stat:
+        path: '{{ project }}/update-vendor'
+      register: vendor
     - name: 'apply vendor patch'
       command: cp -r ~/{{ project }}/update-vendor/vendor ~/{{ project }}
+      when: vendor.stat.exists == True
+
+    - name: 'reload nginx'
+      debug:
+        msg: 'reload nginx'
       notify: reload nginx
 
     - name: 'check if record exist'

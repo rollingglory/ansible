@@ -1,0 +1,14 @@
+---
+- hosts: all
+  vars_files:
+    - ../secret.yml
+  vars:
+    template: 'yii-advanced'
+    nginx_vhosts:
+      - template: '{{ playbook_dir }}/../assets/nginx/{{ template }}.j2'
+        project: '{{ project }}'
+        server_name: '{{ server_name | default(project + ".dev.rollingglory.com" }}'
+        alias: '{{ alias.split(",") | join(" ") }}'
+  roles:
+    - role: geerlingguy.nginx
+      become: yes
