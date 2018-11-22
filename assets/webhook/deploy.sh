@@ -1,26 +1,37 @@
 #!/usr/bin/env bash
 
-export $(cat ~/.env | xargs)
-dir=$(dirname ${BASH_SOURCE})
-log=$dir/deploy.log
+if [ $# -eq 0 ]
+  then echo "Not for GET"
+  exit 0
+fi
+
+findrepo() {
+  find ~ -maxdepth 2 -name .git -exec sh -c \
+    "git -C {} remote get-url origin | grep $@ && dirname {}" \;
+}
+
+webhook=$(dirname ${BASH_SOURCE})
+path=$(findrepo $1 | tail -n1)
+repo=$(findrepo $1 | head -n1 | sed 's/rollingglory:.*@//')
+slug=$(basename $repo)
+log=$webhook/$slug.log
 format="format:[%h](${repo}%h) %<(6,trunc)%ae: %s"
 
+export $(cat $path/.env | xargs)
+
+cd $path
 git fetch
-cat $log
 
 L=$(git rev-parse @)
 R=$(git rev-parse @{u})
 
 if [ $L != $R ]; then
-  $dir/clean.sh
-  git status -uno > $log
-  git reset --hard HEAD >> $log
-  git pull --force >> $log
-  composer install >> $log
+  $webhook/clean.sh
+  git reset --hard HEAD
+  git pull --force
   curl -g "https://api.telegram.org/${token}/sendMessage" \
     -d "chat_id=${chat}" \
     -d "parse_mode=markdown" \
-    -d "text=[Site](${site}) updated.%0A\
-[Deploy Log](${site}:9000/hooks/deploy).%0A\
-$(git log --pretty="$format" $L..HEAD | sed -e 's/\.\.//g' -ze 's/\n/%0A/g')" | tee -a $dir/bot.log
+    -d "text=[Repository]($repo) [Site]($site) updated.%0A%0A\
+$(git log --pretty="$format" $L..HEAD | sed -e 's/\.\.//g' -ze 's/\n/%0A/g')" >> $webhook/bot.log
 fi

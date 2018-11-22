@@ -1,0 +1,10 @@
+[Unit]
+Description=Small server for creating HTTP endpoints (hooks)
+Documentation=https://github.com/adnanh/webhook/
+
+[Service]
+User=coaster
+ExecStart=/usr/bin/webhook -urlprefix '' -secure -cert /etc/ssl/rollingglory.com/fullchain.cer -key /etc/ssl/rollingglory.com/rollingglory.com.key -port 8000 -nopanic -hooks /home/coaster/webhook/webhook.conf
+
+[Install]
+WantedBy=multi-user.target
