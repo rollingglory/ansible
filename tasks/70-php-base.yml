@@ -7,6 +7,7 @@
       - php{{ php_version }}-zip
       - php-memcached
       - php-imagick
+      - php-phalcon
     php_webserver_daemon: "nginx"
     php_install_recommends: no
     php_enable_php_fpm: yes
